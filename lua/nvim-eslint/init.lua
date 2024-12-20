@@ -145,6 +145,7 @@ function M.setup_lsp_start()
         root_dir = M.user_config.root_dir and M.user_config.root_dir(args.buf) or M.resolve_git_dir(args.buf),
         settings = M.make_settings(args.buf),
         capabilities = M.user_config.capabilities or M.make_client_capabilities(),
+        on_attach = M.user_config.on_attach,
         handlers = vim.tbl_deep_extend('keep', M.user_config.handlers or {}, {
           ["workspace/configuration"] = function(_, result, ctx)
             local function lookup_section(table, section)
