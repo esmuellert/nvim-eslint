@@ -176,6 +176,8 @@ All `vscode-eslint` settings options mentioned below is located at their [docs](
     -   **Multi-package Single Project**: If your repository has multiple `package.json` files for subfolders but is built as a single project at the root level, the working directory should be the root folder. If not, determine the working directory for each subfolder and write a function to set it correctly.
 
     If none of these scenarios fit your setup, you may need to write a custom function to determine the working directory.
+    
+    **Note**: this parameter is very likely to be confused with `workingDirectories` parameter. The detail of the difference is explained here: https://github.com/esmuellert/nvim-eslint/issues/1#issuecomment-2645988503
 
 -   `workspaceFolder`: In Neovim, the concept of a workspace folder is less relevant compared to VSCode, as Neovim primarily operates with buffers. Typically, in VSCode, the workspace folder is the root directory of your project, often the git root. For Neovim, this plugin uses the git root folder as the workspace folder by default. This setting is mainly useful for determining the working directory as described earlier. If the default setting does not suit your needs, you may need to customize it.
 
