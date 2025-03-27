@@ -24,6 +24,12 @@ function M.resolve_package_json_dir(bufnr)
   return package_json_dir
 end
 
+function M.resolve_eslint_config_dir(bufnr)
+  local markers = { 'eslint.config.js', 'eslint.config.mjs', 'eslint.config.cjs', 'eslint.config.ts', 'eslint.config.mts', 'eslint.config.cts' }
+  local eslint_config_dir = vim.fs.root(bufnr, markers);
+  return eslint_config_dir
+end
+
 function M.make_settings(buffer)
   local settings_with_function = vim.tbl_deep_extend('keep', M.user_config.settings or {}, {
     validate = 'on',
@@ -62,9 +68,18 @@ function M.make_settings(buffer)
     workingDirectory = { mode = 'location' },
     workspaceFolder = function(bufnr)
       local git_dir = M.resolve_git_dir(bufnr)
+      local package_json_dir = M.resolve_package_json_dir(bufnr)
+      local eslint_config_dir = M.resolve_eslint_config_dir(bufnr)
+      local workspace_dir = git_dir or package_json_dir or eslint_config_dir
+      
+      if not workspace_dir then
+        vim.notify("ESLint: Could not find git, package.json, or eslint config directory. Using current directory as fallback.", vim.log.levels.WARN)
+        workspace_dir = vim.fn.getcwd()
+      end
+      
       return {
-        uri = vim.uri_from_fname(git_dir),
-        name = vim.fn.fnamemodify(git_dir, ':t'),
+        uri = vim.uri_from_fname(workspace_dir),
+        name = vim.fn.fnamemodify(workspace_dir, ':t'),
       }
     end,
 
