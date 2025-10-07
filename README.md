@@ -30,6 +30,17 @@ Therefore, I decided to start from simple, and tried to understand all configura
 Plug 'esmuellert/nvim-eslint'
 ```
 
+### [lazy.nvim](https://github.com/folke/lazy.nvim)
+
+```lua
+{
+  'esmuellert/nvim-eslint',
+  config = function()
+    require('nvim-eslint').setup({})
+  end,
+}
+```
+
 ## Quickstart
 
 Add this to your lua configuration file:
