@@ -26,6 +26,13 @@ if [ "$DEBUG_MODE" == "false" ]; then
   echo "Cleaning up the repository except for ./vscode-eslint/server/out..."
   find ./vscode-eslint -mindepth 1 ! -regex '^./vscode-eslint/server\(/.*\)?' -delete
   find ./vscode-eslint/server -mindepth 1 ! -regex '^./vscode-eslint/server/out\(/.*\)?' -delete
+  
+  # Remove unnecessary TypeScript declaration files (.d.ts)
+  # Keep only the essential runtime files: eslintServer.js and eslintServer.js.map
+  echo "Removing unnecessary TypeScript declaration files..."
+  find ./vscode-eslint/server/out -type f -name "*.d.ts" -delete
+  # Remove empty directories that may be left after deleting .d.ts files
+  find ./vscode-eslint/server/out -type d -empty -delete
 else
   echo "Skipping cleanup due to --debug mode."
 fi
