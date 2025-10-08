@@ -18,19 +18,23 @@ jobs:
       - name: Set up PNPM
         uses: pnpm/action-setup@v2
         with:
-          version: 8
+          version: latest
           run_install: false
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 'node'
           cache: 'pnpm'
 
-      - name: Set up Neovim
-        uses: jghauser/setup-neovim@v1
-        with:
-          neovim-version: stable
+      - name: Install Neovim
+        run: |
+          sudo apt update
+          sudo apt install -y software-properties-common
+          sudo add-apt-repository ppa:neovim-ppa/unstable -y
+          sudo apt update
+          sudo apt install -y neovim
+          nvim --version
 
       - name: Clone turborepo fixture
         run: |
