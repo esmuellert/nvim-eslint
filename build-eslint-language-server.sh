@@ -12,7 +12,7 @@ git clone https://github.com/microsoft/vscode-eslint.git
 
 # Checkout the given release version
 cd vscode-eslint
-git checkout release/3.0.10
+git checkout release/3.0.16
 npm install
 
 # Build the eslint language server
