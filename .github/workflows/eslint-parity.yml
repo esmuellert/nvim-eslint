@@ -39,11 +39,11 @@ jobs:
 
       - name: Install Neovim
         run: |
-          sudo apt update
-          sudo apt install -y software-properties-common
+          sudo apt-get update
+          sudo apt-get install -y software-properties-common
           sudo add-apt-repository ppa:neovim-ppa/stable -y
-          sudo apt update
-          sudo apt install -y neovim
+          sudo apt-get update
+          sudo apt-get install -y neovim
           nvim --version | head -n 1
 
       - name: Install turborepo dependencies
