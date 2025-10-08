@@ -1,0 +1,60 @@
+name: ESLint parity verification
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: "0 6 * * 2"
+    - cron: "0 18 * * 5"
+
+jobs:
+  eslint-parity:
+    runs-on: ubuntu-latest
+    env:
+      FIXTURE_REPO: ${{ github.workspace }}/.fixtures/turborepo
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare turborepo fixture
+        uses: actions/checkout@v4
+        with:
+          repository: vercel/turborepo
+          path: .fixtures/turborepo
+          ref: main
+          fetch-depth: 1
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'pnpm'
+          cache-dependency-path: |
+            .fixtures/turborepo/pnpm-lock.yaml
+
+      - name: Install Neovim
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y software-properties-common
+          sudo add-apt-repository ppa:neovim-ppa/unstable -y
+          sudo apt-get update
+          sudo apt-get install -y neovim
+          nvim --version | head -n 1
+
+      - name: Install turborepo dependencies
+        working-directory: ${{ env.FIXTURE_REPO }}
+        run: pnpm install --frozen-lockfile
+
+      - name: Seed ESLint violations and verify parity
+        env:
+          NVIM_ESLINT_FIXTURE: ${{ env.FIXTURE_REPO }}
+        run: |
+          python tests/e2e/parity/run_eslint_parity_suite.py
