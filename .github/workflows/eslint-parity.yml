@@ -1,0 +1,47 @@
+name: ESLint parity verification
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  eslint-parity:
+    runs-on: ubuntu-latest
+    env:
+      FIXTURE_REPO: ${{ github.workspace }}/.fixtures/turborepo
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up PNPM
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'pnpm'
+
+      - name: Set up Neovim
+        uses: jghauser/setup-neovim@v1
+        with:
+          neovim-version: stable
+
+      - name: Clone turborepo fixture
+        run: |
+          git clone --depth 1 https://github.com/vercel/turborepo.git "$FIXTURE_REPO"
+
+      - name: Install turborepo dependencies
+        working-directory: ${{ env.FIXTURE_REPO }}
+        run: pnpm install --frozen-lockfile
+
+      - name: Seed ESLint violations and verify parity
+        env:
+          NVIM_ESLINT_FIXTURE: ${{ env.FIXTURE_REPO }}
+        run: |
+          python tests/e2e/parity/run_eslint_parity_suite.py
