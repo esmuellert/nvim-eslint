@@ -5,6 +5,9 @@ on:
   push:
     branches:
       - main
+  schedule:
+    - cron: "0 6 * * 2"
+    - cron: "0 18 * * 5"
 
 jobs:
   eslint-parity:
