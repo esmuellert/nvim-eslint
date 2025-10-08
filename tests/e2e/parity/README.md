@@ -12,7 +12,7 @@ This guide documents the end-to-end test suite that compares diagnostics from `n
 
 ## Prerequisites
 - Neovim 0.11 (latest stable release, currently 0.11.4) or newer so `vim.fs.root` and ESLint integration behave identically to CI.
-- Node.js LTS (`lts/*` on `actions/setup-node`) and PNPM, plus the ability to install workspace dependencies.
+- Node.js LTS (`lts/*` on `actions/setup-node`) and PNPM. Install Node first, then run `pnpm/action-setup` (or `corepack enable`) so the package manager can bootstrap correctly.
 - Python 3.10+ for the helper scripts.
 - Network access to clone the `turborepo` fixture unless you supply `NVIM_ESLINT_FIXTURE` yourself.
 
@@ -62,4 +62,4 @@ Useful flags:
 - `--timeout` adjusts the milliseconds the collector waits for diagnostics (default: `20000`).
 
 ## Continuous integration
-The GitHub Actions workflow `.github/workflows/eslint-parity.yml` provisions Neovim, Node.js, and PNPM, clones the turborepo fixture, installs dependencies, and runs `python tests/e2e/parity/run_eslint_parity_suite.py` on every push and pull request targeting `main`. The job installs Neovim from the `neovim-ppa/stable` channel to guarantee the latest stable release (currently 0.11.4) and pins Node.js to the LTS train.
+The GitHub Actions workflow `.github/workflows/eslint-parity.yml` provisions Neovim, Node.js, and PNPM, clones the turborepo fixture, installs dependencies, and runs `python tests/e2e/parity/run_eslint_parity_suite.py` on every push and pull request targeting `main`. Node.js LTS is installed before PNPM so `pnpm/action-setup` can reuse the runtime, and `corepack enable` exposes the globally installed `pnpm`. The job installs Neovim from the `neovim-ppa/stable` channel to guarantee the latest stable release (currently 0.11.4) and pins Node.js to the LTS train.

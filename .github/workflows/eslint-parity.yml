@@ -15,17 +15,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'pnpm'
+          cache-dependency-path: |
+            .fixtures/turborepo/pnpm-lock.yaml
+
       - name: Set up PNPM
         uses: pnpm/action-setup@v2
         with:
           version: latest
           run_install: false
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 'lts/*'
-          cache: 'pnpm'
+      - name: Enable Corepack
+        run: corepack enable
 
       - name: Install Neovim
         run: |
