@@ -15,16 +15,24 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Prepare turborepo fixture
+        uses: actions/checkout@v4
+        with:
+          repository: vercel/turborepo
+          path: .fixtures/turborepo
+          ref: main
+          fetch-depth: 1
+
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 10
+          version: 9
           run_install: false
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: 'lts/*'
           cache: 'pnpm'
           cache-dependency-path: |
             .fixtures/turborepo/pnpm-lock.yaml
@@ -37,10 +45,6 @@ jobs:
           sudo apt update
           sudo apt install -y neovim
           nvim --version | head -n 1
-
-      - name: Clone turborepo fixture
-        run: |
-          git clone --depth 1 https://github.com/vercel/turborepo.git "$FIXTURE_REPO"
 
       - name: Install turborepo dependencies
         working-directory: ${{ env.FIXTURE_REPO }}
