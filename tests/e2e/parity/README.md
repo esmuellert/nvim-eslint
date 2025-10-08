@@ -11,7 +11,7 @@ This guide documents the end-to-end test suite that compares diagnostics from `n
   - `run_eslint_parity_suite.py` orchestrates multi-file parity checks for CI.
 
 ## Prerequisites
-- Neovim 0.11 (latest stable release, currently 0.11.4) or newer so `vim.fs.root` and ESLint integration behave identically to CI.
+- Neovim 0.11 or newer so `vim.fs.root` and ESLint integration behave identically to CI.
 - Node.js LTS (the workflow requests `lts/*`) and the latest PNPM release. The GitHub Actions workflow mirrors the [pnpm/action-setup](https://github.com/pnpm/action-setup) example: install PNPM via the action first, then initialize Node.js with `actions/setup-node` to enable caching.
 - Python 3.10+ for the helper scripts.
 - Network access to clone the `turborepo` fixture unless you supply `NVIM_ESLINT_FIXTURE` yourself.
@@ -62,4 +62,4 @@ Useful flags:
 - `--timeout` adjusts the milliseconds the collector waits for diagnostics (default: `20000`).
 
 ## Continuous integration
-The GitHub Actions workflow `.github/workflows/eslint-parity.yml` provisions Neovim, PNPM, and Node.js, checks out the turborepo fixture, installs dependencies, and runs `python tests/e2e/parity/run_eslint_parity_suite.py` on every push and pull request targeting `main`. It follows pnpm's recommended order (`pnpm/action-setup@v4` with the latest PNPM channel before `actions/setup-node@v4`) so the package manager and cache are configured consistently. The job installs Neovim from the `neovim-ppa/stable` channel to guarantee the latest stable release (currently 0.11.4) and pins Node.js to the LTS train.
+The GitHub Actions workflow `.github/workflows/eslint-parity.yml` provisions Neovim, PNPM, and Node.js, checks out the turborepo fixture, installs dependencies, and runs `python tests/e2e/parity/run_eslint_parity_suite.py` on every push and pull request targeting `main`. It follows pnpm's recommended order (`pnpm/action-setup@v4` with the latest PNPM channel before `actions/setup-node@v4`) so the package manager and cache are configured consistently. The job installs Neovim from the `neovim-ppa/unstable` channel to pick up the newest 0.11 builds and pins Node.js to the LTS train.
