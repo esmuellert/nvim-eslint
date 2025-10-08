@@ -107,13 +107,41 @@ local function to_eslint_json(bufnr, diagnostics)
   return { result }
 end
 
+local function list_clients(bufnr)
+  if vim.lsp.get_clients then
+    return vim.lsp.get_clients({ bufnr = bufnr })
+  end
+
+  if vim.lsp.get_active_clients then
+    local ok, clients = pcall(vim.lsp.get_active_clients, { bufnr = bufnr })
+    if ok and clients then
+      return clients
+    end
+
+    local fallback = vim.lsp.get_active_clients()
+    if bufnr == nil then
+      return fallback
+    end
+
+    local filtered = {}
+    for _, client in ipairs(fallback) do
+      if client.attached_buffers and client.attached_buffers[bufnr] then
+        table.insert(filtered, client)
+      end
+    end
+    return filtered
+  end
+
+  return {}
+end
+
 function M.collect(opts)
   opts = opts or {}
   local bufnr = opts.bufnr or vim.api.nvim_get_current_buf()
   local timeout = opts.timeout or 10000
 
   local attached = wait_for(function()
-    local clients = vim.lsp.get_clients({ bufnr = bufnr })
+    local clients = list_clients(bufnr)
     for _, client in ipairs(clients) do
       if client.name == "eslint" then
         return true

@@ -12,22 +12,59 @@ function M.get_plugin_root()
     return vim.fn.fnamemodify(str, ":p:h:h:h")
 end
 
+local function find_root(bufnr, markers)
+  if vim.fs and vim.fs.root then
+    return vim.fs.root(bufnr, markers)
+  end
+
+  local path = vim.api.nvim_buf_get_name(bufnr)
+  if not path or path == '' then
+    path = vim.loop.cwd()
+  end
+
+  local dir = vim.fn.fnamemodify(path, ':p:h')
+  local function has_marker(target_dir)
+    for _, marker in ipairs(markers) do
+      local candidate = target_dir .. '/' .. marker
+      if vim.fn.isdirectory(candidate) == 1 or vim.fn.filereadable(candidate) == 1 then
+        return true
+      end
+    end
+    return false
+  end
+
+  while dir and dir ~= '' do
+    if has_marker(dir) then
+      return dir
+    end
+
+    local parent = vim.fn.fnamemodify(dir, ':h')
+    if not parent or parent == dir then
+      break
+    end
+    dir = parent
+  end
+
+  return nil
+end
+
 function M.resolve_git_dir(bufnr)
-  local markers = { '.git' }
-  local git_dir = vim.fs.root(bufnr, markers);
-  return git_dir
+  return find_root(bufnr, { '.git' })
 end
 
 function M.resolve_package_json_dir(bufnr)
-  local markers = { 'package.json' }
-  local package_json_dir = vim.fs.root(bufnr, markers);
-  return package_json_dir
+  return find_root(bufnr, { 'package.json' })
 end
 
 function M.resolve_eslint_config_dir(bufnr)
-  local markers = { 'eslint.config.js', 'eslint.config.mjs', 'eslint.config.cjs', 'eslint.config.ts', 'eslint.config.mts', 'eslint.config.cts' }
-  local eslint_config_dir = vim.fs.root(bufnr, markers);
-  return eslint_config_dir
+  return find_root(bufnr, {
+    'eslint.config.js',
+    'eslint.config.mjs',
+    'eslint.config.cjs',
+    'eslint.config.ts',
+    'eslint.config.mts',
+    'eslint.config.cts',
+  })
 end
 
 function M.make_settings(buffer)
