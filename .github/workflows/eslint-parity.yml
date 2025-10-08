@@ -24,17 +24,17 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 'node'
+          node-version: 'lts/*'
           cache: 'pnpm'
 
       - name: Install Neovim
         run: |
           sudo apt update
           sudo apt install -y software-properties-common
-          sudo add-apt-repository ppa:neovim-ppa/unstable -y
+          sudo add-apt-repository ppa:neovim-ppa/stable -y
           sudo apt update
           sudo apt install -y neovim
-          nvim --version
+          nvim --version | head -n 1
 
       - name: Clone turborepo fixture
         run: |

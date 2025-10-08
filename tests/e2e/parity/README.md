@@ -11,8 +11,8 @@ This guide documents the end-to-end test suite that compares diagnostics from `n
   - `run_eslint_parity_suite.py` orchestrates multi-file parity checks for CI.
 
 ## Prerequisites
-- Neovim 0.10 or newer (the plugin depends on `vim.fs.root`).
-- Node.js 18+, PNPM, and the ability to install workspace dependencies.
+- Neovim 0.11 (latest stable release, currently 0.11.4) or newer so `vim.fs.root` and ESLint integration behave identically to CI.
+- Node.js LTS (`lts/*` on `actions/setup-node`) and PNPM, plus the ability to install workspace dependencies.
 - Python 3.10+ for the helper scripts.
 - Network access to clone the `turborepo` fixture unless you supply `NVIM_ESLINT_FIXTURE` yourself.
 
@@ -62,4 +62,4 @@ Useful flags:
 - `--timeout` adjusts the milliseconds the collector waits for diagnostics (default: `20000`).
 
 ## Continuous integration
-The GitHub Actions workflow `.github/workflows/eslint-parity.yml` provisions Neovim, Node.js, and PNPM, clones the turborepo fixture, installs dependencies, and runs `python tests/e2e/parity/run_eslint_parity_suite.py` on every push and pull request targeting `main`.
+The GitHub Actions workflow `.github/workflows/eslint-parity.yml` provisions Neovim, Node.js, and PNPM, clones the turborepo fixture, installs dependencies, and runs `python tests/e2e/parity/run_eslint_parity_suite.py` on every push and pull request targeting `main`. The job installs Neovim from the `neovim-ppa/stable` channel to guarantee the latest stable release (currently 0.11.4) and pins Node.js to the LTS train.
