@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Version of vscode-eslint to use
+VSCODE_ESLINT_VERSION="3.0.16"
+
 # Check if --debug option is provided
 DEBUG_MODE=false
 if [ "$1" == "--debug" ]; then
@@ -12,7 +15,7 @@ git clone https://github.com/microsoft/vscode-eslint.git
 
 # Checkout the given release version
 cd vscode-eslint
-git checkout release/3.0.16
+git checkout "release/${VSCODE_ESLINT_VERSION}"
 npm install
 
 # Build the eslint language server

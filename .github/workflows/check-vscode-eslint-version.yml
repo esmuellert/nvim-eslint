@@ -1,0 +1,84 @@
+name: Check vscode-eslint Version
+
+on:
+  workflow_dispatch:  # Allow manual triggering for testing
+  schedule:
+    - cron: '0 12 * * 1'  # Run every Monday at 12:00 UTC (once a week)
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check vscode-eslint version
+        id: version-check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          bash .github/scripts/check-vscode-eslint-version.sh
+
+      - name: Create issue for new version
+        if: steps.version-check.outputs.up-to-date == 'false'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const currentVersion = '${{ steps.version-check.outputs.current-version }}';
+            const latestVersion = '${{ steps.version-check.outputs.latest-version }}';
+
+            const title = `Update vscode-eslint to version ${latestVersion}`;
+            const body = `A new version of \`microsoft/vscode-eslint\` is available.
+
+            **Current version:** \`${currentVersion}\`
+            **Latest version:** \`${latestVersion}\`
+
+            ### Steps to update:
+            1. Review the [release notes](https://github.com/microsoft/vscode-eslint/releases/tag/release/${latestVersion})
+            2. Update \`VSCODE_ESLINT_VERSION\` in \`build-eslint-language-server.sh\` to \`${latestVersion}\`
+            3. Run \`./build-eslint-language-server.sh\` to rebuild the language server
+            4. Run the end-to-end parity tests to ensure compatibility:
+               \`\`\`bash
+               python tests/e2e/parity/run_eslint_parity_suite.py
+               \`\`\`
+            5. Review and test with real projects
+            6. Commit and push the changes
+
+            ### References
+            - [vscode-eslint releases](https://github.com/microsoft/vscode-eslint/releases)
+            - [Build script](https://github.com/${{ github.repository }}/blob/main/build-eslint-language-server.sh)
+
+            ---
+            *This issue was automatically created by the [version check workflow](https://github.com/${{ github.repository }}/actions/workflows/check-vscode-eslint-version.yml).*`;
+
+            // Check if an issue already exists
+            const existingIssues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'dependencies,automation'
+            });
+
+            const duplicateIssue = existingIssues.data.find(issue =>
+              issue.title.includes(`Update vscode-eslint to version ${latestVersion}`)
+            );
+
+            if (duplicateIssue) {
+              console.log(`Issue already exists: ${duplicateIssue.html_url}`);
+              return;
+            }
+
+            // Create the issue
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['dependencies', 'automation']
+            });
+
+            console.log(`Created issue: ${issue.data.html_url}`);
