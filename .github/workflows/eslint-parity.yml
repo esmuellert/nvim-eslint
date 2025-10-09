@@ -14,17 +14,10 @@ jobs:
     runs-on: ubuntu-latest
     env:
       FIXTURE_REPO: ${{ github.workspace }}/.fixtures/turborepo
+      NVIM_ESLINT_FIXTURE: ${{ github.workspace }}/.fixtures/turborepo
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Prepare turborepo fixture
-        uses: actions/checkout@v4
-        with:
-          repository: vercel/turborepo
-          path: .fixtures/turborepo
-          ref: main
-          fetch-depth: 1
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -49,12 +42,6 @@ jobs:
           sudo apt-get install -y neovim
           nvim --version | head -n 1
 
-      - name: Install turborepo dependencies
-        working-directory: ${{ env.FIXTURE_REPO }}
-        run: pnpm install --frozen-lockfile
-
-      - name: Seed ESLint violations and verify parity
-        env:
-          NVIM_ESLINT_FIXTURE: ${{ env.FIXTURE_REPO }}
+      - name: Run end-to-end suites
         run: |
-          python tests/e2e/parity/run_eslint_parity_suite.py
+          python tests/run_tests.py --suite-arg "parity=--nvim-cmd nvim"
