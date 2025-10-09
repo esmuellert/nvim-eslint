@@ -49,7 +49,7 @@ function M.resolve_node_path()
   result = result:gsub('\r\n$', ''):gsub('\n$', '')
 
   if vim.v.shell_error ~= 0 then
-    print('Error: Could not find Node.js path. ESlint server will use default path.')
+    print('Error: Could not find Node.js path. ESLint server will use default path.')
     return nil
   end
 
