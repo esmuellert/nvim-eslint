@@ -167,7 +167,6 @@ def main(argv: List[str] | None = None) -> int:
     for suite in selected:
         reset_fixture(fixture_root)
         status = run_suite(suite, suite_args[suite], env=env)
-        reset_fixture(fixture_root)
         if status != 0:
             print(f"Suite '{suite}' failed with exit code {status}", file=sys.stderr)
             failures.append(suite)
