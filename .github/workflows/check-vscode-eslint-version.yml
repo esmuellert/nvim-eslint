@@ -21,7 +21,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          bash .github/scripts/check-vscode-eslint-version.sh
+          bash .github/scripts/check-vscode-eslint-version/check-vscode-eslint-version.sh
 
       - name: Create issue for new version
         if: steps.version-check.outputs.up-to-date == 'false'
