@@ -1,4 +1,4 @@
-name: ESLint parity verification
+name: ESLint End to End Test
 
 on:
   pull_request:
