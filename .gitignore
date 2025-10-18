@@ -1,2 +1,3 @@
 # Build logs
 build.log
+tests/e2e/nested-package-json/node_modules/
