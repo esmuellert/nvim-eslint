@@ -21,7 +21,9 @@ nested-package-json/
         └── file-to-lint.ts        # DOES NOT WORK
 ```
 
-**Update**: The test project now has its own `.git` repository initialized at the root. This matches the real user's folder structure from [issue #10, comment 3384387846](https://github.com/esmuellert/nvim-eslint/issues/10#issuecomment-3384387846). With this change, the `root_dir` should correctly resolve to the test project directory instead of the parent nvim-eslint repository.
+**Update**: The test project now has its own `.git` repository initialized at the root. This matches the real user's folder structure from [issue #10, comment 3384387846](https://github.com/esmuellert/nvim-eslint/issues/10#issuecomment-3384387846). With this change, the `root_dir` correctly resolves to the test project directory.
+
+**✅ TEST RESULT**: With `.git` properly initialized, **diagnostics now work perfectly**! All 7 ESLint errors/warnings appear correctly, matching the ESLint CLI output. See `TEST_RESULTS.md` for complete details.
 
 ## Verification Results
 

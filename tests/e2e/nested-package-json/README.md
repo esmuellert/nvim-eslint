@@ -37,11 +37,18 @@ When opening `sub-dir/some-other-dir/file-to-lint.ts` in Neovim with nvim-eslint
 
 ## Setup
 
+**IMPORTANT**: This test project requires its own `.git` repository to accurately replicate the user's environment. The `.git` directory cannot be committed to the parent repository, so you must initialize it manually.
+
 To prepare this test project:
 
 ```bash
 cd tests/e2e/nested-package-json
-pnpm install
+
+# Initialize the .git repository (REQUIRED)
+./setup-git.sh
+
+# Install dependencies (if not already installed)
+npm install
 ```
 
 ## Testing with ESLint CLI
