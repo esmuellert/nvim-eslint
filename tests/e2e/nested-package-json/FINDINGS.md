@@ -10,7 +10,7 @@ Created a test project at `tests/e2e/nested-package-json/` that exactly replicat
 
 ```
 nested-package-json/
-├── .git/                          # Git repository root
+├── .git/                          # Git repository root (initialized to match real projects)
 ├── eslint.config.mjs              # ESLint flat config
 ├── package.json                   # Root package.json with dependencies
 ├── root-file.ts                   # Works correctly
@@ -20,6 +20,8 @@ nested-package-json/
     └── some-other-dir/
         └── file-to-lint.ts        # DOES NOT WORK
 ```
+
+**Update**: The test project now has its own `.git` repository initialized at the root. This matches the real user's folder structure from [issue #10, comment 3384387846](https://github.com/esmuellert/nvim-eslint/issues/10#issuecomment-3384387846). With this change, the `root_dir` should correctly resolve to the test project directory instead of the parent nvim-eslint repository.
 
 ## Verification Results
 
@@ -74,7 +76,29 @@ According to the [ESLint LSP documentation](https://github.com/microsoft/vscode-
 
 ## Root Cause Analysis
 
-The issue appears to be related to how the plugin determines the `root_dir`:
+### Previous Issue (Before Adding .git to Test Project)
+
+The initial issue was that the plugin's `root_dir` resolution prioritized `.git` directory, but the test project didn't have its own `.git`. This caused `vim.fs.root(bufnr, {'.git'})` to find the parent nvim-eslint repository's `.git`, resulting in:
+- **Root Dir**: `/home/runner/work/nvim-eslint/nvim-eslint` (wrong - parent repo)
+- **workspaceFolder**: Points to parent repo instead of test project
+- Result: ESLint server couldn't find the config properly
+
+### Current Setup (After Adding .git to Test Project)
+
+The test project now has its own `.git` directory at the root, matching the real user's project structure. This should cause `root_dir` to resolve correctly to the test project directory. 
+
+**Expected behavior with .git present:**
+- `vim.fs.root(bufnr, {'.git'})` should find the test project's `.git`
+- **Root Dir** should be: `/home/runner/work/nvim-eslint/nvim-eslint/tests/e2e/nested-package-json`
+- **workspaceFolder** should point to the test project
+- ESLint should find `eslint.config.mjs` in the workspace folder
+- **Diagnostics should appear** if this was the only issue
+
+If diagnostics still don't appear with the correct `root_dir`, then the problem is deeper - likely related to how the ESLint LSP server resolves configurations when encountering intermediate `package.json` files, even with the correct workspace folder.
+
+### Root_dir Resolution Logic
+
+The issue is related to how the plugin determines the `root_dir`:
 
 From `lua/nvim-eslint/client.lua` (lines 105-114):
 ```lua
