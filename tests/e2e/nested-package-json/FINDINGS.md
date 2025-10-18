@@ -31,11 +31,46 @@ $ npx eslint sub-dir/some-other-dir/file-to-lint.ts
 ```
 
 ### nvim-eslint Plugin (Issue Reproduced)
+
 When opening `sub-dir/some-other-dir/file-to-lint.ts` with nvim-eslint:
+
+**Actual LSP Configuration (from debug-working-dir.lua):**
 - **No diagnostics appear** (empty diagnostics array: `{}`)
-- Root Dir: `/home/runner/work/nvim-eslint/nvim-eslint` (git root of the nvim-eslint repo, not the test project!)
-- workingDirectory: `{ mode = "location" }`
-- workspaceFolder: Points to nvim-eslint repo root
+- **Root Dir**: `/home/runner/work/nvim-eslint/nvim-eslint` (git root of the nvim-eslint repo, NOT the test project!)
+- **workingDirectory**: `{ mode = "location" }`
+- **workspaceFolder**: 
+  ```lua
+  {
+    name = "nvim-eslint",
+    uri = "file:///home/runner/work/nvim-eslint/nvim-eslint"
+  }
+  ```
+
+**What the ESLint LSP Server Receives:**
+
+According to the [ESLint LSP documentation](https://github.com/microsoft/vscode-eslint/blob/main/%24shared/settings.ts#L156-L178), when `workingDirectory.mode = "location"`, the server determines the working directory by:
+1. First trying to use the `workspaceFolder` (which points to wrong directory: `/home/runner/work/nvim-eslint/nvim-eslint`)
+2. Falling back to the file's location if workspace folder doesn't have ESLint config
+
+**The Resolution Process in ESLint LSP:**
+- The server looks for ESLint config files starting from the workspaceFolder
+- It finds NO eslint.config.mjs in `/home/runner/work/nvim-eslint/nvim-eslint`
+- Falls back to the file location: `sub-dir/some-other-dir/`
+- Looks for config in: `sub-dir/some-other-dir/`, `sub-dir/`, then `nested-package-json/`
+- Finds `eslint.config.mjs` in `nested-package-json/`
+- BUT the intermediate `package.json` in `sub-dir/` confuses the resolution
+- Result: ESLint fails to properly configure and returns no diagnostics
+
+**Expected Configuration:**
+- **Root Dir**: `/home/runner/work/nvim-eslint/nvim-eslint/tests/e2e/nested-package-json`
+- **workspaceFolder**: 
+  ```lua
+  {
+    name = "nested-package-json",
+    uri = "file:///home/runner/work/nvim-eslint/nvim-eslint/tests/e2e/nested-package-json"
+  }
+  ```
+- With this, ESLint would find the config immediately and lint correctly
 
 ## Root Cause Analysis
 
@@ -109,12 +144,38 @@ require('nvim-eslint').setup({
 })
 ```
 
+## Debugging Process
+
+Following the README.md debugging instructions, a debug script (`debug-working-dir.lua`) was created to:
+1. Enable `vim.lsp.set_log_level('debug')` as recommended
+2. Capture the actual LSP configuration sent to the server
+3. Monitor what the ESLint LSP receives
+
+**Key Files:**
+- `debug-working-dir.lua` - Debug script that captures LSP configuration
+- Output saved to `/tmp/debug-working-dir-results.txt`
+- LSP log at `~/.local/state/nvim/lsp.log` contains full request/response details
+
+**How to reproduce the debugging:**
+```bash
+cd tests/e2e/nested-package-json
+nvim -u debug-working-dir.lua --headless sub-dir/some-other-dir/file-to-lint.ts
+cat /tmp/debug-working-dir-results.txt
+```
+
 ## Next Steps
 
 To fix this issue properly, the plugin should:
 
 1. **Improve root_dir resolution**: Consider ESLint config location with higher priority than `.git`
-2. **Better workingDirectory handling**: The default `{ mode = "location" }` may not work well with nested structures
+   - Current order: `.git` → `package.json` → `eslint.config.*` → `cwd`
+   - Better order: `eslint.config.*` → `.git` → `package.json` → `cwd`
+   
+2. **Better workingDirectory handling**: The default `{ mode = "location" }` doesn't work well when:
+   - The `workspaceFolder` points to the wrong directory
+   - There are intermediate `package.json` files
+   - Solution: Calculate workingDirectory dynamically to point to ESLint config location
+   
 3. **Add documentation**: Warn users about this edge case and provide configuration examples
 
 ## References
