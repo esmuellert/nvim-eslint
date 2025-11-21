@@ -45,7 +45,7 @@ function M.resolve_node_path()
   local result = vim.fn.exepath('node')
 
   if result == '' then
-    print('Error: Could not find Node.js path. ESLint server will use default path.')
+    vim.notify('ESLint: Could not find Node.js path. ESLint server will use default path.', vim.log.levels.WARN)
     return nil
   end
 
