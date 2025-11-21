@@ -42,14 +42,10 @@ function M.use_flat_config(bufnr)
 end
 
 function M.resolve_node_path()
-  local is_windows = vim.loop.os_uname().sysname == 'Windows_NT'
-  local command = is_windows and 'where.exe node' or 'which node'
+  local result = vim.fn.exepath('node')
 
-  local result = vim.fn.system(command)
-  result = result:gsub('\r\n$', ''):gsub('\n$', '')
-
-  if vim.v.shell_error ~= 0 then
-    print('Error: Could not find Node.js path. ESLint server will use default path.')
+  if result == '' then
+    vim.notify('ESLint: Could not find Node.js path. ESLint server will use default path.', vim.log.levels.WARN)
     return nil
   end
 
