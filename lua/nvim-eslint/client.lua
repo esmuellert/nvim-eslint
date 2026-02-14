@@ -133,6 +133,12 @@ start_client_for_buffer = function(bufnr)
     end,
     handlers = vim.tbl_deep_extend('keep', user_config.handlers or {}, {
       ["workspace/configuration"] = configuration_handler,
+      -- Handle server-to-client requests that require a response to prevent
+      -- MethodNotFound errors triggering infinite retry loops.
+      ["eslint/noLibrary"] = function() return {} end,
+      ["eslint/noConfig"] = function() return {} end,
+      ["eslint/openDoc"] = function() return {} end,
+      ["eslint/probeFailed"] = function() return {} end,
     }),
   })
 end
