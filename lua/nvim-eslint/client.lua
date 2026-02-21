@@ -99,6 +99,11 @@ local function configuration_handler(_, result, ctx)
 end
 
 start_client_for_buffer = function(bufnr)
+  -- Skip non-file buffers (e.g. virtual buffers from diff plugins)
+  if vim.bo[bufnr].buftype ~= '' then
+    return
+  end
+
   local user_on_attach = user_config.on_attach
   local user_on_exit = user_config.on_exit
 
